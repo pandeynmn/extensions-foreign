@@ -119,7 +119,7 @@ export class Parser {
         return [createTagSection({ id: '0', label: 'genres', tags: genres })]
     }
 
-    parseSearchResults($: CheerioSelector, source: any): MangaTile[] {
+    parseSearchResults($: CheerioSelector): MangaTile[] {
         const results: MangaTile[] = []
         for (const obj of $('.col-6.col-md-4.col-lg-3.px-1.mb-2.lister-layout').toArray()) {
             const id = $('.overlay > a', $(obj)).attr('href')?.replace('/comic/', '').replace('/', '') ?? ''
@@ -161,8 +161,6 @@ export class Parser {
         const section2 = createHomeSection({ id: '2', title: 'Top Rated', type: HomeSectionType.singleRowNormal })
         const section3 = createHomeSection({ id: '3', title: 'Top Today', type: HomeSectionType.singleRowNormal })
 
-        const sections = [section1, section2, section3]
-
         const latest: MangaTile[] = []
         const topRated: MangaTile[] = []
         const topToday: MangaTile[] = []
@@ -184,6 +182,8 @@ export class Parser {
                 })
             )
         }
+        section1.items = latest
+        sectionCallback(section1)
 
         for (const obj of arrTop) {
             const id = $('.d-block', $(obj)).attr('href')?.replace('/comic/', '').replace('/', '') ?? ''
@@ -199,6 +199,8 @@ export class Parser {
                 })
             )
         }
+        section2.items = topRated
+        sectionCallback(section2)
 
         for (const obj of arrToday) {
             const id = $('.overlay > a', $(obj)).attr('href')?.replace('/comic/', '').replace('/', '') ?? ''
@@ -213,11 +215,7 @@ export class Parser {
                 })
             )
         }
-
-        sections[0].items = latest
-        sections[1].items = topRated
-        sections[2].items = topToday
-
-        for (const section of sections) sectionCallback(section)
+        section3.items = topToday
+        sectionCallback(section3)
     }
 }

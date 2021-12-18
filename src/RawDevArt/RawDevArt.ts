@@ -3,18 +3,12 @@ import {
     ChapterDetails,
     ContentRating,
     HomeSection,
-    HomeSectionType,
-    LanguageCode,
     Manga,
     MangaTile,
-    MangaUpdates,
     PagedResults,
-    RequestHeaders,
-    RequestManager,
     SearchRequest,
     Source,
     SourceInfo,
-    Tag,
     TagSection,
     TagType,
 } from 'paperback-extensions-common';
@@ -103,7 +97,7 @@ export class RawDevArt extends Source {
         let page = metadata?.page ?? 1
         if (page == -1) return createPagedResults({results: [],metadata: {page: -1}}) 
 
-        let param = `/?page=${page}${this.addTags(query)}&title=${query.title}`
+        const param = `/?page=${page}${this.addTags(query)}&title=${query.title}`
         const request = createRequestObject({
             url: `${RA_DOMAIN}/search`,
             method: 'GET',
@@ -113,7 +107,7 @@ export class RawDevArt extends Source {
         
         const data = await this.requestManager.schedule(request, 2)
         const $ = this.cheerio.load(data.data)
-        const manga = this.parser.parseSearchResults($, this)
+        const manga = this.parser.parseSearchResults($)
         
         page ++
         if (manga.length < 12) page = -1
