@@ -469,7 +469,6 @@ class RawDevArt extends paperback_extensions_common_1.Source {
     getSearchResults(query, metadata) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            // throw new Error('Method not implemented.')
             let page = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1;
             if (page == -1)
                 return createPagedResults({ results: [], metadata: { page: -1 } });
@@ -529,7 +528,7 @@ class RawDevArt extends paperback_extensions_common_1.Source {
     }
     /**
      * Parses a time string from a Madara source into a Date object.
-     * Copied from Madara.ts
+     * Copied from Madara.ts made by gamefuzzy
      */
     convertTime(timeAgo) {
         var _a;
@@ -561,7 +560,7 @@ class RawDevArt extends paperback_extensions_common_1.Source {
         for (const tag of query.includedTags) {
             tag_str += `${tag.id},`;
         }
-        return tag_str.replace(/,\s*$/, "");
+        return tag_str.replace(/,\s*$/, '');
     }
 }
 exports.RawDevArt = RawDevArt;
@@ -574,7 +573,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const RA_DOMAIN = 'https://rawdevart.com';
 class Parser {
     parseMangaDetails($, mangaId) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const title = (_a = $('.img-fluid.not-lazy').attr('title')) !== null && _a !== void 0 ? _a : '';
         const img = (_b = $('.img-fluid.not-lazy').attr('src')) !== null && _b !== void 0 ? _b : '';
         const desc = (_c = $('.description.pb-2.mb-2 > p').text().trim()) !== null && _c !== void 0 ? _c : '';
@@ -582,6 +581,7 @@ class Parser {
         let author = '';
         let artist = '';
         let status_str = '';
+        let hentai = false;
         const info = $('tbody > tr').toArray();
         let i = 0;
         for (const obj of info) {
@@ -607,17 +607,28 @@ class Parser {
                 status = paperback_extensions_common_1.MangaStatus.COMPLETED;
                 break;
         }
+        const arrayTags = [];
+        for (const obj of $('.genres.mb-1 > a').toArray()) {
+            const id = (_g = (_f = $(obj).attr('href')) === null || _f === void 0 ? void 0 : _f.replace('/genre/', '').replace('/', '')) !== null && _g !== void 0 ? _g : '';
+            const label = $(obj).text().trim();
+            if (['ADULT', 'SMUT', 'MATURE'].includes(id.toUpperCase()))
+                hentai = true;
+            if (!id || !label)
+                continue;
+            arrayTags.push({ id: id, label: label });
+        }
+        const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
         return createManga({
             id: mangaId,
             titles: [title],
-            image: (_f = `${RA_DOMAIN}${img}`) !== null && _f !== void 0 ? _f : '',
-            rating: (_g = Number(rating)) !== null && _g !== void 0 ? _g : 0,
+            image: (_h = `${RA_DOMAIN}${img}`) !== null && _h !== void 0 ? _h : '',
+            rating: (_j = Number(rating)) !== null && _j !== void 0 ? _j : 0,
             status,
             artist,
             author,
+            tags: tagSections,
             desc,
-            //hentai
-            hentai: false,
+            hentai,
         });
     }
     parseChapters($, mangaId, source) {
