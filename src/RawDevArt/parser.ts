@@ -22,6 +22,7 @@ export class Parser {
         let author = ''
         let artist = ''
         let status_str = ''
+        let hentai = false
         const info = $('tbody > tr').toArray()
 
         let i = 0
@@ -29,13 +30,13 @@ export class Parser {
             switch (i) {
                 case 3:
                     author = $('td', $(obj)).text().trim() ?? ''
-                    break;
+                    break
                 case 4:
                     artist = $('td', $(obj)).text().trim() ?? ''
-                    break;
+                    break
                 case 5:
                     status_str = $('td', $(obj)).text().trim()
-                    break;
+                    break
             }
             i++
         }
@@ -44,11 +45,21 @@ export class Parser {
         switch (status_str) {
             case 'Ongoing':
                 status = MangaStatus.ONGOING
-                break;
+                break
             case 'Finished':
                 status = MangaStatus.COMPLETED
-                break;
+                break
         }
+        
+        const arrayTags: Tag[] = []
+        for (const obj of $('.genres.mb-1 > a').toArray()) {
+            const id = $(obj).attr('href')?.replace('/genre/', '').replace('/', '') ?? ''
+            const label = $(obj).text().trim()
+            if (['ADULT', 'SMUT', 'MATURE'].includes(id.toUpperCase())) hentai = true
+            if (!id || !label) continue
+            arrayTags.push({ id: id, label: label })
+        }
+        const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
 
         return createManga({
             id: mangaId,
@@ -58,9 +69,9 @@ export class Parser {
             status,
             artist,
             author,
+            tags: tagSections,
             desc,
-            //hentai
-            hentai: false,
+            hentai,
         })
     }
 
@@ -157,7 +168,7 @@ export class Parser {
     }
 
     parseHomeSections($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void {
-        const section1 = createHomeSection({ id: '1', title: 'Latest', type: HomeSectionType.singleRowNormal, view_more:true })
+        const section1 = createHomeSection({ id: '1', title: 'Latest', type: HomeSectionType.singleRowNormal, view_more: true })
         const section2 = createHomeSection({ id: '2', title: 'Top Rated', type: HomeSectionType.singleRowNormal })
         const section3 = createHomeSection({ id: '3', title: 'Top Today', type: HomeSectionType.singleRowNormal })
 
