@@ -1,8 +1,8 @@
 {
-    "name": "nmn-extension",
-    "repositoryName": "NMN's Extensions",
+    "name": "nmn-extension-foreign",
+    "repositoryName": "NmN's Foreign Extensions",
     "version": "1.0.0",
-    "description": "Currently holds the Reaper Scans source.",
+    "description": "Repo for non-english manga sources.",
     "main": "index.js",
     "scripts": {
       "bundle": "paperback bundle",
