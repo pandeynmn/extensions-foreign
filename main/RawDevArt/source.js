@@ -473,7 +473,7 @@ class RawDevArt extends paperback_extensions_common_1.Source {
             let page = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1;
             if (page == -1)
                 return createPagedResults({ results: [], metadata: { page: -1 } });
-            let param = `/?page=${page}${this.addTags(query)}&title=${query.title}`;
+            const param = `/?page=${page}${this.addTags(query)}&title=${query.title}`;
             const request = createRequestObject({
                 url: `${RA_DOMAIN}/search`,
                 method: 'GET',
@@ -481,7 +481,7 @@ class RawDevArt extends paperback_extensions_common_1.Source {
             });
             const data = yield this.requestManager.schedule(request, 2);
             const $ = this.cheerio.load(data.data);
-            const manga = this.parser.parseSearchResults($, this);
+            const manga = this.parser.parseSearchResults($);
             page++;
             if (manga.length < 12)
                 page = -1;
@@ -672,7 +672,7 @@ class Parser {
         }
         return [createTagSection({ id: '0', label: 'genres', tags: genres })];
     }
-    parseSearchResults($, source) {
+    parseSearchResults($) {
         var _a, _b, _c, _d, _e, _f;
         const results = [];
         for (const obj of $('.col-6.col-md-4.col-lg-3.px-1.mb-2.lister-layout').toArray()) {
@@ -710,7 +710,6 @@ class Parser {
         const section1 = createHomeSection({ id: '1', title: 'Latest', type: paperback_extensions_common_1.HomeSectionType.singleRowNormal, view_more: true });
         const section2 = createHomeSection({ id: '2', title: 'Top Rated', type: paperback_extensions_common_1.HomeSectionType.singleRowNormal });
         const section3 = createHomeSection({ id: '3', title: 'Top Today', type: paperback_extensions_common_1.HomeSectionType.singleRowNormal });
-        const sections = [section1, section2, section3];
         const latest = [];
         const topRated = [];
         const topToday = [];
@@ -728,6 +727,8 @@ class Parser {
                 subtitleText: createIconText({ text: (_f = info[1]) !== null && _f !== void 0 ? _f : '' }),
             }));
         }
+        section1.items = latest;
+        sectionCallback(section1);
         for (const obj of arrTop) {
             const id = (_h = (_g = $('.d-block', $(obj)).attr('href')) === null || _g === void 0 ? void 0 : _g.replace('/comic/', '').replace('/', '')) !== null && _h !== void 0 ? _h : '';
             const title = (_j = $('.d-block > img', $(obj)).attr('title')) !== null && _j !== void 0 ? _j : '';
@@ -740,6 +741,8 @@ class Parser {
                 subtitleText: createIconText({ text: subTitle }),
             }));
         }
+        section2.items = topRated;
+        sectionCallback(section2);
         for (const obj of arrToday) {
             const id = (_q = (_p = $('.overlay > a', $(obj)).attr('href')) === null || _p === void 0 ? void 0 : _p.replace('/comic/', '').replace('/', '')) !== null && _q !== void 0 ? _q : '';
             const info = $('.title', $(obj)).text().trim().split('\n');
@@ -751,11 +754,8 @@ class Parser {
                 subtitleText: createIconText({ text: (_t = info[1]) !== null && _t !== void 0 ? _t : '' }),
             }));
         }
-        sections[0].items = latest;
-        sections[1].items = topRated;
-        sections[2].items = topToday;
-        for (const section of sections)
-            sectionCallback(section);
+        section3.items = topToday;
+        sectionCallback(section3);
     }
 }
 exports.Parser = Parser;
