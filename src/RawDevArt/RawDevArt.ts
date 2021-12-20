@@ -17,13 +17,13 @@ import { Parser } from './parser'
 const RA_DOMAIN = 'https://rawdevart.com'
 
 export const RawDevArtInfo: SourceInfo = {
-    version: '2.0.0',
+    version: '2.0.1',
     name: 'RawDevArt',
     description: 'JAPANESE: Extension that pulls manga from RawDev art.',
     author: 'NmN',
     authorWebsite: 'http://github.com/pandeynmm',
     icon: 'icon.jpeg',
-    contentRating: ContentRating.EVERYONE,
+    contentRating: ContentRating.MATURE,
     websiteBaseURL: RA_DOMAIN,
     sourceTags: [
         {
@@ -92,30 +92,32 @@ export class RawDevArt extends Source {
         return this.parser.parseTags($)
     }
 
+    override async supportsTagExclusion(): Promise<boolean> {
+        return true
+    }
+
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         let page = metadata?.page ?? 1
-        if (page == -1) return createPagedResults({results: [],metadata: {page: -1}}) 
+        if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
 
         const param = `/?page=${page}${this.addTags(query)}&title=${query.title}`
         const request = createRequestObject({
             url: `${RA_DOMAIN}/search`,
             method: 'GET',
-            param
+            param,
         })
 
-        
         const data = await this.requestManager.schedule(request, 2)
         const $ = this.cheerio.load(data.data)
         const manga = this.parser.parseSearchResults($)
-        
-        page ++
+
+        page++
         if (manga.length < 12) page = -1
-        
+
         return createPagedResults({
             results: manga,
-            metadata: {page: page}
+            metadata: { page: page },
         })
-
     }
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
@@ -130,10 +132,10 @@ export class RawDevArt extends Source {
     }
 
     override async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        if (homepageSectionId != '1') return createPagedResults({results: [],metadata: {page: -1}})  
+        if (homepageSectionId != '1') return createPagedResults({ results: [], metadata: { page: -1 } })
         // We only have one homepage section ID, so we don't need to worry about handling that any
-        let page = metadata?.page ?? 1   // Default to page 0
-        if (page == -1) return createPagedResults({results: [],metadata: {page: -1}}) 
+        let page = metadata?.page ?? 1 // Default to page 0
+        if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
 
         const request = createRequestObject({
             url: `${RA_DOMAIN}/?page=${page}`,
@@ -146,12 +148,11 @@ export class RawDevArt extends Source {
 
         page++
         if (manga.length < 40) page = -1
-        
+
         return createPagedResults({
             results: manga,
-            metadata: {page: page}
+            metadata: { page: page },
         })
-
     }
 
     /**
@@ -178,11 +179,19 @@ export class RawDevArt extends Source {
     }
 
     addTags(query: SearchRequest): string {
-        if (query.includedTags?.length == null) return ''
+        let tag_str = ''
+        if (query.includedTags?.length != null) {
+            tag_str = '&genre_inc='
+            for (const tag of query.includedTags) {
+                tag_str += `${tag.id},`
+            }
+        }
 
-        let tag_str = '&genre_inc='
-        for (const tag of query.includedTags) {
-            tag_str += `${tag.id},`
+        if (query.excludedTags?.length != null) {
+            tag_str += '&genre_exc='
+            for (const tag of query.excludedTags) {
+                tag_str += `${tag.id},`
+            }
         }
         return tag_str.replace(/,\s*$/, '')
     }
