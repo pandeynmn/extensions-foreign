@@ -393,7 +393,7 @@ const parser_1 = require("./parser");
 const helper_1 = require("./helper");
 const MW_DOMAIN = 'https://www.mangaworld.in';
 exports.MangaWorldInfo = {
-    version: '2.0.0',
+    version: '2.0.1',
     name: 'MangaWorld',
     description: 'ITALIAN: Extension that pulls manga from MangaWorld.',
     author: 'NmN',
@@ -759,7 +759,7 @@ class Parser {
         sectionCallback(section1);
         let i = 0;
         for (const obj of arrHotTitle) {
-            const id = (_g = (_f = $('a', obj).attr('href')) === null || _f === void 0 ? void 0 : _f.replace('https://www.mangaworld.in/manga/', '').slice(0, -1)) !== null && _g !== void 0 ? _g : '';
+            const id = (_g = (_f = $('a', obj).attr('href')) === null || _f === void 0 ? void 0 : _f.replace('https://www.mangaworld.in/manga/', '')) !== null && _g !== void 0 ? _g : '';
             const image = (_h = $('.img-fluid', obj).attr('src')) !== null && _h !== void 0 ? _h : '';
             const title = $('.name', obj).text().trim();
             if (i == 10)
