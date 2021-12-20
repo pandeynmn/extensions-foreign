@@ -19,7 +19,7 @@ import { URLBuilder } from './helper'
 
 const MW_DOMAIN = 'https://www.mangaworld.in'
 export const MangaWorldInfo: SourceInfo = {
-    version: '2.0.0',
+    version: '2.0.1',
     name: 'MangaWorld',
     description: 'ITALIAN: Extension that pulls manga from MangaWorld.',
     author: 'NmN',
