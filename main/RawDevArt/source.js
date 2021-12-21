@@ -394,7 +394,7 @@ const RA_DOMAIN = 'https://rawdevart.com';
 exports.RawDevArtInfo = {
     version: '2.0.1',
     name: 'RawDevArt',
-    description: 'JAPANESE: Extension that pulls manga from RawDev art.',
+    description: 'Extension that pulls manga from RawDev art.',
     author: 'NmN',
     authorWebsite: 'http://github.com/pandeynmm',
     icon: 'icon.jpeg',
@@ -406,8 +406,8 @@ exports.RawDevArtInfo = {
             type: paperback_extensions_common_1.TagType.GREEN,
         },
         {
-            text: 'Experimental',
-            type: paperback_extensions_common_1.TagType.RED,
+            text: 'JAPANESE',
+            type: paperback_extensions_common_1.TagType.GREY,
         },
     ],
 };
@@ -629,7 +629,7 @@ class Parser {
                 continue;
             arrayTags.push({ id: id, label: label });
         }
-        const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+        const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map((x) => createTag(x)) })];
         return createManga({
             id: mangaId,
             titles: [title],
