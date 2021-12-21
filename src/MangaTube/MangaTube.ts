@@ -7,6 +7,7 @@ import {
     Manga,
     MangaTile,
     PagedResults,
+    RequestManager,
     SearchRequest,
     Source,
     SourceInfo,
@@ -15,32 +16,31 @@ import {
 } from 'paperback-extensions-common'
 
 import { Parser } from './parser'
-import { URLBuilder } from './helper'
 
-const MW_DOMAIN = 'https://www.mangaworld.in'
-export const MangaWorldInfo: SourceInfo = {
-    version: '2.0.1',
-    name: 'MangaWorld',
-    description: 'Extension that pulls manga from MangaWorld.',
+const MT_DOMAIN = 'https://manga-tube.me/'
+export const MangaTubeInfo: SourceInfo = {
+    version: '2.0.0',
+    name: 'MangaTube',
+    description: 'Extension that pulls manga from MangaTube.',
     author: 'NmN',
     authorWebsite: 'http://github.com/pandeynmm',
     icon: 'icon.png',
     contentRating: ContentRating.EVERYONE,
-    language: LanguageCode.ITALIAN,
-    websiteBaseURL: MW_DOMAIN,
+    language: LanguageCode.GERMAN,
+    websiteBaseURL: MT_DOMAIN,
     sourceTags: [
         {
             text: 'New',
             type: TagType.GREEN,
         },
         {
-            text: 'ITALIAN',
+            text: 'GERMAN',
             type: TagType.GREY,
         },
     ],
 }
 
-export class MangaWorld extends Source {
+export class MangaTube extends Source {
     requestManager = createRequestManager({
         requestsPerSecond: 3,
     })
@@ -48,12 +48,12 @@ export class MangaWorld extends Source {
     parser = new Parser()
 
     override getMangaShareUrl(mangaId: string): string {
-        return `${MW_DOMAIN}/manga/${mangaId}`
+        return `${MT_DOMAIN}/series/${mangaId}`
     }
 
     async getMangaDetails(mangaId: string): Promise<Manga> {
         const request = createRequestObject({
-            url: `${MW_DOMAIN}/manga/${mangaId}`,
+            url: `${MT_DOMAIN}/series/${mangaId}`,
             method: 'GET',
         })
 
@@ -64,7 +64,7 @@ export class MangaWorld extends Source {
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
         const request = createRequestObject({
-            url: `${MW_DOMAIN}/manga/${mangaId}`,
+            url: `${MT_DOMAIN}/series/${mangaId}`,
             method: 'GET',
         })
 
@@ -75,17 +75,17 @@ export class MangaWorld extends Source {
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
         const request = createRequestObject({
-            url: `${MW_DOMAIN}/manga/${mangaId}/read/${chapterId}/?style=list`,
+            url: `${MT_DOMAIN}/series/${chapterId}`,
             method: 'GET',
         })
         const response = await this.requestManager.schedule(request, 3)
         const $ = this.cheerio.load(response.data)
-        return this.parser.parseChapterDetails($, mangaId, chapterId)
+        return this.parser.parseChapterDetails(response.data, mangaId, chapterId)
     }
 
     override async getTags(): Promise<TagSection[]> {
         const request = createRequestObject({
-            url: MW_DOMAIN,
+            url: MT_DOMAIN,
             method: 'GET',
         })
 
@@ -98,10 +98,21 @@ export class MangaWorld extends Source {
         let page = metadata?.page ?? 1
         if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
 
-        const request = this.constructSearchRequest(page, query)
-        const data = await this.requestManager.schedule(request, 2)
-        const $ = this.cheerio.load(data.data)
-        const manga = this.parser.parseSearchResults($)
+        const request = createRequestObject({
+            url: `${MT_DOMAIN}/ajax`,
+            method: 'POST',
+            headers: this.constructHeaders({
+                'content-type': 'application/x-www-form-urlencoded',
+            }),
+            data: {
+                action: 'search_query',
+                'parameter[query]': query.title,
+            },
+        })
+        const response = await this.requestManager.schedule(request, 2)
+        const $ = this.cheerio.load(response.data)
+
+        const manga = this.parser.parseSearchResults(response.data)
 
         page++
         if (manga.length < 16) page = -1
@@ -114,7 +125,7 @@ export class MangaWorld extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: `${MW_DOMAIN}`,
+            url: `${MT_DOMAIN}`,
             method: 'GET',
         })
         const response = await this.requestManager.schedule(request, 2)
@@ -123,18 +134,22 @@ export class MangaWorld extends Source {
         this.parser.parseHomeSections($, sectionCallback)
     }
 
-    override async getViewMoreItems(_: string, metadata: any): Promise<PagedResults> {
+    override async getViewMoreItems(id: string, metadata: any): Promise<PagedResults> {
         const page = metadata?.page ?? 1
-
-        const request = createRequestObject({
-            url: `${MW_DOMAIN}/?page=${page}`,
-            method: 'GET',
-        })
-
+        const request  = this.createRequestObject(id, page)
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
-        const manga: MangaTile[] = this.parser.parseViewMore($)
 
+        let manga: MangaTile[] = []
+        switch (id) {
+            case '1':
+                manga = this.parser.parseViewMoreLatest($)
+                if (page > 1) manga.shift()
+                break
+            case '2':
+                manga = this.parser.parseViewMorePopular(response.data)
+                break
+        }
         return createPagedResults({
             results: manga,
             metadata: { page: page + 1 },
@@ -164,20 +179,36 @@ export class MangaWorld extends Source {
         return time
     }
 
-    constructSearchRequest(page: number, query: SearchRequest): any {
-        const request = createRequestObject({
-            url: new URLBuilder(MW_DOMAIN)
-                .addPathComponent('archive')
-                .addQueryParameter('keyword', encodeURIComponent(query?.title ?? ''))
-                .addQueryParameter(
-                    'genre',
-                    query?.includedTags?.map((x: any) => x.id)
-                )
-                .addQueryParameter('sort', 'most_read')
-                .addQueryParameter('page', page.toString())
-                .buildUrl({ addTrailingSlash: true, includeUndefinedParameters: false }),
+    createRequestObject(id: string, page: string): any {
+        let request = createRequestObject({
+            url: `${MT_DOMAIN}/?page=${page}`,
             method: 'GET',
         })
+        if (id == '1') return request
+
+        request = createRequestObject({
+            url: `${MT_DOMAIN}/ajax`,
+            method: 'POST',
+            headers: this.constructHeaders({
+                'content-type': 'application/x-www-form-urlencoded',
+            }),
+            data: {
+                action: 'load_series_list_entries',
+                'parameter[page]': page,
+                'parameter[sortby]': 'popularity',
+                'parameter[order]': 'asc',
+            },
+        })
         return request
+    }
+
+    userAgentRandomizer = `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/78.0${Math.floor(Math.random() * 100000)}`
+    constructHeaders(headers?: any, refererPath?: string): any {
+        headers = headers ?? {}
+        if (this.userAgentRandomizer !== '') {
+            headers['user-agent'] = this.userAgentRandomizer
+        }
+        headers['referer'] = `${MT_DOMAIN}${refererPath ?? ''}`
+        return headers
     }
 }

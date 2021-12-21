@@ -19,7 +19,7 @@ const RA_DOMAIN = 'https://rawdevart.com'
 export const RawDevArtInfo: SourceInfo = {
     version: '2.0.1',
     name: 'RawDevArt',
-    description: 'JAPANESE: Extension that pulls manga from RawDev art.',
+    description: 'Extension that pulls manga from RawDev art.',
     author: 'NmN',
     authorWebsite: 'http://github.com/pandeynmm',
     icon: 'icon.jpeg',
@@ -31,8 +31,8 @@ export const RawDevArtInfo: SourceInfo = {
             type: TagType.GREEN,
         },
         {
-            text: 'Experimental',
-            type: TagType.RED,
+            text: 'JAPANESE',
+            type: TagType.GREY,
         },
     ],
 }
@@ -40,9 +40,9 @@ export const RawDevArtInfo: SourceInfo = {
 export class RawDevArt extends Source {
     requestManager = createRequestManager({
         requestsPerSecond: 3,
-    });
+    })
 
-    parser = new Parser();
+    parser = new Parser()
 
     override getMangaShareUrl(mangaId: string): string {
         return `${RA_DOMAIN}/comic/${mangaId}`

@@ -50,7 +50,7 @@ export class Parser {
                 status = MangaStatus.COMPLETED
                 break
         }
-        
+
         const arrayTags: Tag[] = []
         for (const obj of $('.genres.mb-1 > a').toArray()) {
             const id = $(obj).attr('href')?.replace('/genre/', '').replace('/', '') ?? ''
@@ -59,7 +59,7 @@ export class Parser {
             if (!id || !label) continue
             arrayTags.push({ id: id, label: label })
         }
-        const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
+        const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map((x) => createTag(x)) })]
 
         return createManga({
             id: mangaId,
