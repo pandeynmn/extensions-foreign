@@ -571,47 +571,7 @@ class NineManga extends paperback_extensions_common_1.Source {
 }
 exports.NineManga = NineManga;
 
-},{"./NineMangaParser":50,"./helper":51,"paperback-extensions-common":5}],49:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NineMangaEN = exports.NineMangaENInfo = void 0;
-const paperback_extensions_common_1 = require("paperback-extensions-common");
-const NineManga_1 = require("../NineManga");
-const EN_DOMAIN = 'https://ninemanga.com';
-exports.NineMangaENInfo = {
-    version: NineManga_1.getExportVersion('0.0.0'),
-    name: 'NineMangaEN',
-    description: 'Extension that pulls manga from ninemanga.com',
-    author: 'NmN',
-    authorWebsite: 'http://github.com/pandyenmn',
-    icon: 'icon.png',
-    contentRating: paperback_extensions_common_1.ContentRating.EVERYONE,
-    websiteBaseURL: EN_DOMAIN,
-    language: paperback_extensions_common_1.LanguageCode.ENGLISH,
-    sourceTags: [
-        {
-            text: 'Notifications',
-            type: paperback_extensions_common_1.TagType.GREEN
-        },
-        {
-            text: 'English',
-            type: paperback_extensions_common_1.TagType.GREY
-        }
-    ]
-};
-class NineMangaEN extends NineManga_1.NineManga {
-    constructor() {
-        super(...arguments);
-        this.baseUrl = EN_DOMAIN;
-        this.languageCode = paperback_extensions_common_1.LanguageCode.ENGLISH;
-        this.genreTag = 'Genre(s)';
-        this.authorTag = 'Author(s)';
-        this.statusTag = 'Status';
-    }
-}
-exports.NineMangaEN = NineMangaEN;
-
-},{"../NineManga":48,"paperback-extensions-common":5}],50:[function(require,module,exports){
+},{"./NineMangaParser":49,"./helper":51,"paperback-extensions-common":5}],49:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -866,7 +826,75 @@ class Parser {
 }
 exports.Parser = Parser;
 
-},{"paperback-extensions-common":5}],51:[function(require,module,exports){
+},{"paperback-extensions-common":5}],50:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NineMangaRU = exports.NineMangaRUInfo = void 0;
+const paperback_extensions_common_1 = require("paperback-extensions-common");
+const NineManga_1 = require("../NineManga");
+const RU_DOMAIN = 'https://ru.ninemanga.com';
+exports.NineMangaRUInfo = {
+    version: NineManga_1.getExportVersion('0.0.0'),
+    name: 'NineMangaRU',
+    description: 'Extension that pulls manga from ru.ninemanga.com',
+    author: 'NmN',
+    authorWebsite: 'http://github.com/pandyenmn',
+    icon: 'icon.png',
+    contentRating: paperback_extensions_common_1.ContentRating.EVERYONE,
+    language: paperback_extensions_common_1.LanguageCode.RUSSIAN,
+    websiteBaseURL: RU_DOMAIN,
+    sourceTags: [
+        {
+            text: 'Notifications',
+            type: paperback_extensions_common_1.TagType.GREEN
+        },
+        {
+            text: 'Russian',
+            type: paperback_extensions_common_1.TagType.GREY
+        }
+    ]
+};
+class NineMangaRU extends NineManga_1.NineManga {
+    constructor() {
+        super(...arguments);
+        this.baseUrl = RU_DOMAIN;
+        this.languageCode = paperback_extensions_common_1.LanguageCode.ITALIAN;
+        this.genreTag = 'Жанры';
+        this.authorTag = 'Автор';
+        this.statusTag = 'статус';
+    }
+    parseStatus(str) {
+        let status = paperback_extensions_common_1.MangaStatus.UNKNOWN;
+        switch (str.toLowerCase()) {
+            case 'постоянный':
+                status = paperback_extensions_common_1.MangaStatus.ONGOING;
+                break;
+            case 'завершенный':
+                status = paperback_extensions_common_1.MangaStatus.COMPLETED;
+                break;
+        }
+        return status;
+    }
+    convertTime(timeAgo) {
+        var _a;
+        let time;
+        let trimmed = Number(((_a = /\d*/.exec(timeAgo)) !== null && _a !== void 0 ? _a : [])[0]);
+        trimmed = trimmed == 0 && timeAgo.includes('a') ? 1 : trimmed;
+        if (timeAgo.includes('mins') || timeAgo.includes('minutes') || timeAgo.includes('minute')) {
+            time = new Date(Date.now() - trimmed * 60000);
+        }
+        else if (timeAgo.includes('часа') || timeAgo.includes('hour')) {
+            time = new Date(Date.now() - trimmed * 3600000);
+        }
+        else {
+            time = new Date(timeAgo);
+        }
+        return time;
+    }
+}
+exports.NineMangaRU = NineMangaRU;
+
+},{"../NineManga":48,"paperback-extensions-common":5}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.URLBuilder = void 0;
@@ -910,5 +938,5 @@ class URLBuilder {
 }
 exports.URLBuilder = URLBuilder;
 
-},{}]},{},[49])(49)
+},{}]},{},[50])(50)
 });

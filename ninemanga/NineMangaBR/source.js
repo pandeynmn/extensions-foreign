@@ -437,9 +437,14 @@ class NineManga extends paperback_extensions_common_1.Source {
     }
     getChapterDetails(mangaId, chapterId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const request = this.createRequest(`${chapterId}-10-1`);
+            const request = createRequestObject({
+                url: `${chapterId}-10-1`,
+                method: 'GET',
+                headers: this.constructHeaders({}),
+            });
             const response = yield this.requestManager.schedule(request, 3);
             const $ = this.cheerio.load(response.data);
+            // throw new Error(`${chapterId}-10-1 ${$.html().toString().substring(0, 500)}`)
             return this.parser.parseChapterDetails($, mangaId, chapterId, this);
         });
     }
@@ -489,7 +494,7 @@ class NineManga extends paperback_extensions_common_1.Source {
             const updatedManga = this.parser.filterUpdatedManga($, time, ids, this);
             if (updatedManga.length > 0) {
                 mangaUpdatesFoundCallback(createMangaUpdates({
-                    ids: updatedManga
+                    ids: updatedManga,
                 }));
             }
         });
@@ -520,15 +525,11 @@ class NineManga extends paperback_extensions_common_1.Source {
         }
         return time;
     }
-    createRequest(url, method = 'GET', param = '') {
+    createRequest(url) {
         return createRequestObject({
             url,
-            method,
-            param,
-            headers: this.constructHeaders({
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) Gecko/20100101 Firefox/75',
-                'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8,gl;q=0.7',
-            }),
+            method: 'GET',
+            headers: this.constructHeaders({}),
         });
     }
     constructSearchRequest(page, query) {
@@ -704,17 +705,14 @@ class Parser {
         });
     }
     parseChapters($, mangaId, source) {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c;
         const chapters = [];
-        let prevChapNum = 0;
+        let prevChapNum = 1;
         const arrChapters = $('#sub_vol_ul_0 li').toArray().reverse();
         for (const obj of arrChapters) {
-            const id = (_b = (_a = $('a', obj).attr('href')) === null || _a === void 0 ? void 0 : _a.replace('.html', '')) !== null && _b !== void 0 ? _b : '';
+            const id = (_b = (_a = $('a', obj).attr('href')) === null || _a === void 0 ? void 0 : _a.replace('.html', '').replace(/\/$/, '')) !== null && _b !== void 0 ? _b : '';
             const name = (_c = $('a', obj).attr('title')) !== null && _c !== void 0 ? _c : '';
-            const chapspl = (_e = (_d = $('a', obj).attr('title')) === null || _d === void 0 ? void 0 : _d.split(' ')) !== null && _e !== void 0 ? _e : [];
             const chapNum = prevChapNum++;
-            // Number(chapspl[chapspl?.length - 1].replace('Ch.', '').replace(/[^0-9.]/g, '')) ??
-            // prevChapNum = chapNum
             const time = source.convertTime($('span', obj).text().trim());
             chapters.push(createChapter({
                 id,
@@ -881,14 +879,7 @@ class Parser {
     getImage(url, source) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const request = createRequestObject({
-                url,
-                method: 'GET',
-                headers: source.constructHeaders({
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) Gecko/20100101 Firefox/75',
-                    'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8,gl;q=0.7',
-                }),
-            });
+            const request = source.createRequest(url);
             const response = yield source.requestManager.schedule(request, 3);
             const $ = source.cheerio.load(response.data);
             const arrImages = [];
