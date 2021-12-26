@@ -8,7 +8,7 @@ import { NineMangaEN } from '../NineMangaEN/NineMangaEN'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 
-describe('MangaWorld Tests', () => {
+describe('MangaWorldEN Tests', () => {
 
     const wrapper: APIWrapper = new APIWrapper()
     const source: Source = new NineMangaEN(cheerio)
@@ -20,7 +20,7 @@ describe('MangaWorld Tests', () => {
      * Try to choose a manga which is updated frequently, so that the historical checking test can 
      * return proper results, as it is limited to searching 30 days back due to extremely long processing times otherwise.
      */
-    const mangaId = 'MARTIAL+PEAK' // Trash of the Count's Family
+    const mangaId = 'Solo+Leveling' // Solo leveling
     it('Retrieve Manga Details', async () => {
         const details = await wrapper.getMangaDetails(source, mangaId)
         expect(details, 'No results found with test-defined ID [' + mangaId + ']').to.exist
@@ -63,7 +63,7 @@ describe('MangaWorld Tests', () => {
 
     it('Testing search', async () => {
         const testSearch: SearchRequest = {
-            title: 'MARTIAL PEAK',      // Search Title
+            title: 'solo leveling',      // Search Title
             parameters: {}
         }
 

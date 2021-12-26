@@ -1,8 +1,8 @@
 {
-    "name": "nmn-extension-foreign",
-    "repositoryName": "NmN's Foreign Extensions",
+    "name": "nmn-ninemanga-extensions",
+    "repositoryName": "NineManga Extensions",
     "version": "1.0.0",
-    "description": "Repo for non-english manga sources.",
+    "description": "Repo that sources from different ninemanga websites",
     "main": "index.js",
     "scripts": {
       "bundle": "paperback bundle",
