@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-
 import {
     Chapter,
     ChapterDetails,
@@ -10,10 +9,8 @@ import {
     LanguageCode,
     Manga,
     MangaStatus,
-    MangaTile,
     MangaUpdates,
     PagedResults,
-    RequestHeaders,
     SearchRequest,
     Source,
     TagSection,
@@ -76,9 +73,15 @@ export abstract class NineManga extends Source {
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const request = this.createRequest(`${chapterId}-10-1`)
+        const request = createRequestObject({
+            url: `${chapterId}-10-1`,
+            method: 'GET',
+            headers: this.constructHeaders({}),
+        })
         const response = await this.requestManager.schedule(request, 3)
         const $ = this.cheerio.load(response.data)
+
+        // throw new Error(`${chapterId}-10-1 ${$.html().toString().substring(0, 500)}`)
         return this.parser.parseChapterDetails($, mangaId, chapterId, this)
     }
 
@@ -127,9 +130,11 @@ export abstract class NineManga extends Source {
 
         const updatedManga = this.parser.filterUpdatedManga($, time, ids, this)
         if (updatedManga.length > 0) {
-            mangaUpdatesFoundCallback(createMangaUpdates({
-                ids: updatedManga
-            }))
+            mangaUpdatesFoundCallback(
+                createMangaUpdates({
+                    ids: updatedManga,
+                })
+            )
         }
     }
 
@@ -156,15 +161,11 @@ export abstract class NineManga extends Source {
         return time
     }
 
-    createRequest(url: string, method = 'GET', param = '') : any {
+    createRequest(url: string): any {
         return createRequestObject({
             url,
-            method,
-            param,
-            headers: this.constructHeaders({
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) Gecko/20100101 Firefox/75',
-                'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8,gl;q=0.7',
-            }),
+            method: 'GET',
+            headers: this.constructHeaders({}),
         })
     }
 
@@ -189,7 +190,7 @@ export abstract class NineManga extends Source {
             method: 'GET',
         })
     }
-    
+
     constructHeaders(headers?: any, refererPath?: string): any {
         headers = headers ?? {}
         if (this.userAgentRandomizer !== '') {

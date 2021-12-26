@@ -24,7 +24,7 @@ export const NineMangaFRInfo: SourceInfo = {
     websiteBaseURL: FR_DOMAIN,
     sourceTags: [
         {
-            text: 'New',
+            text: 'Notifications',
             type: TagType.GREEN
         },
         {

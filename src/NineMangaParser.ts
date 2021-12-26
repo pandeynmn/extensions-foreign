@@ -7,7 +7,6 @@ import {
     HomeSectionType,
     LanguageCode,
     Manga,
-    MangaStatus,
     MangaTile,
     Tag,
     TagSection,
@@ -63,15 +62,12 @@ export class Parser {
 
     parseChapters($: CheerioStatic, mangaId: string, source: any): Chapter[] {
         const chapters: Chapter[] = []
-        let prevChapNum = 0
+        let prevChapNum = 1
         const arrChapters = $('#sub_vol_ul_0 li').toArray().reverse()
         for (const obj of arrChapters) {
-            const id = $('a', obj).attr('href')?.replace('.html', '') ?? ''
+            const id = $('a', obj).attr('href')?.replace('.html', '').replace(/\/$/, '') ?? ''
             const name = $('a', obj).attr('title') ?? ''
-            const chapspl = $('a', obj).attr('title')?.split(' ') ?? []
             const chapNum = prevChapNum++
-            // Number(chapspl[chapspl?.length - 1].replace('Ch.', '').replace(/[^0-9.]/g, '')) ??
-            // prevChapNum = chapNum
             const time = source.convertTime($('span', obj).text().trim())
             chapters.push(
                 createChapter({
@@ -250,14 +246,7 @@ export class Parser {
     }
 
     async getImage(url: string, source: any): Promise<string[]> {
-        const request = createRequestObject({
-            url,
-            method: 'GET',
-            headers: source.constructHeaders({
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) Gecko/20100101 Firefox/75',
-                'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8,gl;q=0.7',
-            }),
-        })
+        const request = source.createRequest(url)
         const response = await source.requestManager.schedule(request, 3)
         const $ = source.cheerio.load(response.data)
         const arrImages: string[] = []
