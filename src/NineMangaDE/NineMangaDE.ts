@@ -15,7 +15,7 @@ import {
 const DE_DOMAIN = 'https://de.ninemanga.com'
 
 export const NineMangaDEInfo: SourceInfo = {
-    version: getExportVersion('0.0.0'),
+    version: getExportVersion('0.0.1'),
     name: 'NineMangaDE',
     description: 'Extension that pulls manga from de.ninemanga.com',
     author: 'NmN',
@@ -30,7 +30,7 @@ export const NineMangaDEInfo: SourceInfo = {
             type: TagType.GREEN
         },
         {
-            text: 'Dutch',
+            text: 'German',
             type: TagType.GREY
         }
     ]
