@@ -579,7 +579,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NineManga_1 = require("../NineManga");
 const DE_DOMAIN = 'https://de.ninemanga.com';
 exports.NineMangaDEInfo = {
-    version: NineManga_1.getExportVersion('0.0.0'),
+    version: NineManga_1.getExportVersion('0.0.1'),
     name: 'NineMangaDE',
     description: 'Extension that pulls manga from de.ninemanga.com',
     author: 'NmN',
@@ -594,7 +594,7 @@ exports.NineMangaDEInfo = {
             type: paperback_extensions_common_1.TagType.GREEN
         },
         {
-            text: 'Dutch',
+            text: 'German',
             type: paperback_extensions_common_1.TagType.GREY
         }
     ]
