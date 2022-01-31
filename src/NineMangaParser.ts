@@ -63,7 +63,7 @@ export class Parser {
     parseChapters($: CheerioStatic, mangaId: string, source: any): Chapter[] {
         const chapters: Chapter[] = []
         let prevChapNum = 1
-        const arrChapters = $('#sub_vol_ul_0 li').toArray().reverse()
+        const arrChapters = $('.sub_vol_ul li').toArray().reverse()
         for (const obj of arrChapters) {
             const id = $('a', obj).attr('href')?.replace('.html', '').replace(/\/$/, '') ?? ''
             const name = $('a', obj).attr('title') ?? ''
