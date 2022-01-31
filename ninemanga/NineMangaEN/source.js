@@ -394,7 +394,7 @@ exports.NineManga = exports.getExportVersion = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const helper_1 = require("./helper");
 const NineMangaParser_1 = require("./NineMangaParser");
-const BASE_VERSION = '2.0.0';
+const BASE_VERSION = '2.0.1';
 const getExportVersion = (EXTENSION_VERSION) => {
     return BASE_VERSION.split('.')
         .map((x, index) => Number(x) + Number(EXTENSION_VERSION.split('.')[index]))
@@ -680,7 +680,7 @@ class Parser {
         var _a, _b, _c;
         const chapters = [];
         let prevChapNum = 1;
-        const arrChapters = $('#sub_vol_ul_0 li').toArray().reverse();
+        const arrChapters = $('.sub_vol_ul li').toArray().reverse();
         for (const obj of arrChapters) {
             const id = (_b = (_a = $('a', obj).attr('href')) === null || _a === void 0 ? void 0 : _a.replace('.html', '').replace(/\/$/, '')) !== null && _b !== void 0 ? _b : '';
             const name = (_c = $('a', obj).attr('title')) !== null && _c !== void 0 ? _c : '';
