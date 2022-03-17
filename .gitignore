@@ -1,4 +1,4 @@
-bundles 
+bundles
 
 #compiled sources
 reference
@@ -128,5 +128,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-src/NineMangaRU/*
-src/NineMangaES/*
