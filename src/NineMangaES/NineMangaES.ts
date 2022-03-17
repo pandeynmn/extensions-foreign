@@ -16,7 +16,7 @@ export const NineMangaESInfo: SourceInfo = {
     authorWebsite: 'http://github.com/pandyenmn',
     icon: 'icon.png',
     contentRating: ContentRating.EVERYONE,
-    language: LanguageCode.RUSSIAN,
+    language: LanguageCode.SPANISH,
     websiteBaseURL: ES_DOMAIN,
     sourceTags: [
         {
@@ -32,7 +32,7 @@ export const NineMangaESInfo: SourceInfo = {
 
 export class NineMangaES extends NineManga {
     baseUrl: string = ES_DOMAIN
-    languageCode: LanguageCode = LanguageCode.ITALIAN
+    languageCode: LanguageCode = LanguageCode.SPANISH
 
     genreTag  = 'Género(s)'
     authorTag = 'Autor(s)'
