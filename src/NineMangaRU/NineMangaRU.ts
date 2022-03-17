@@ -32,34 +32,35 @@ export const NineMangaRUInfo: SourceInfo = {
 
 export class NineMangaRU extends NineManga {
     baseUrl: string = RU_DOMAIN
-    languageCode: LanguageCode = LanguageCode.ITALIAN
+    languageCode: LanguageCode = LanguageCode.RUSSIAN
 
-    genreTag = 'Genere(s)'
-    authorTag = 'Author(s)'
-    statusTag = 'Stato'
+    genreTag = 'Жанры'
+    authorTag = 'Автор'
+    statusTag = 'статус'
 
     override parseStatus(str: string): MangaStatus {
         let status = MangaStatus.UNKNOWN
 
         switch (str.toLowerCase()) {
-            case 'in corso':
+           //just incase if there is a manga that is ongoing it will give
+            case 'Продолжается':
                 status = MangaStatus.ONGOING
                 break
-            case 'completato':
+           // most series on ninemangaru will say it's completed but they are not
+            case 'постоянный':
                 status = MangaStatus.COMPLETED
                 break
         }
         return status
     }
-
     protected override convertTime(timeAgo: string): Date {
         let time: Date
         let trimmed = Number((/\d*/.exec(timeAgo) ?? [])[0])
         trimmed = trimmed == 0 && timeAgo.includes('a') ? 1 : trimmed
-        if (timeAgo.includes('mins') || timeAgo.includes('minutes') || timeAgo.includes('minute')) {
+        if (timeAgo.includes('минут') || timeAgo.includes('минута')) {
             time = new Date(Date.now() - trimmed * 60000)
-        } else if (timeAgo.includes('ore') || timeAgo.includes('hour')) {
-            time = new Date(Date.now() - trimmed * 3600000)
+        } else if (timeAgo.includes('часа')) {
+           time = new Date(Date.now() - trimmed * 3600000)
         } else {
             time = new Date(timeAgo)
         }

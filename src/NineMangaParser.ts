@@ -5,7 +5,6 @@ import {
     ChapterDetails,
     HomeSection,
     HomeSectionType,
-    LanguageCode,
     Manga,
     MangaTile,
     Tag,
@@ -76,7 +75,7 @@ export class Parser {
                     name,
                     chapNum,
                     time,
-                    langCode: LanguageCode.JAPANESE,
+                    langCode: source.languageCode,
                 })
             )
         }
