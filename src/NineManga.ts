@@ -196,7 +196,7 @@ export abstract class NineManga extends Source {
         if (this.userAgentRandomizer !== '') {
             headers['user-agent'] = this.userAgentRandomizer
         }
-        headers['referer'] = `${this.baseUrl}${refererPath ?? ''}`
+        headers['accept-language'] = 'es-ES,es;q=0.9,en;q=0.8,gl;q=0.7'
         return headers
     }
 
