@@ -586,7 +586,7 @@ exports.NineMangaESInfo = {
     authorWebsite: 'http://github.com/pandyenmn',
     icon: 'icon.png',
     contentRating: paperback_extensions_common_1.ContentRating.EVERYONE,
-    language: paperback_extensions_common_1.LanguageCode.RUSSIAN,
+    language: paperback_extensions_common_1.LanguageCode.SPANISH,
     websiteBaseURL: ES_DOMAIN,
     sourceTags: [
         {
@@ -603,7 +603,7 @@ class NineMangaES extends NineManga_1.NineManga {
     constructor() {
         super(...arguments);
         this.baseUrl = ES_DOMAIN;
-        this.languageCode = paperback_extensions_common_1.LanguageCode.ITALIAN;
+        this.languageCode = paperback_extensions_common_1.LanguageCode.SPANISH;
         this.genreTag = 'Género(s)';
         this.authorTag = 'Autor(s)';
         this.statusTag = 'Estado';
@@ -720,7 +720,7 @@ class Parser {
                 name,
                 chapNum,
                 time,
-                langCode: paperback_extensions_common_1.LanguageCode.JAPANESE,
+                langCode: source.languageCode,
             }));
         }
         return chapters;

@@ -652,7 +652,7 @@ class Parser {
                 name,
                 chapNum,
                 time,
-                langCode: paperback_extensions_common_1.LanguageCode.JAPANESE,
+                langCode: source.languageCode,
             }));
         }
         return chapters;
@@ -858,18 +858,20 @@ class NineMangaRU extends NineManga_1.NineManga {
     constructor() {
         super(...arguments);
         this.baseUrl = RU_DOMAIN;
-        this.languageCode = paperback_extensions_common_1.LanguageCode.ITALIAN;
-        this.genreTag = 'Genere(s)';
-        this.authorTag = 'Author(s)';
-        this.statusTag = 'Stato';
+        this.languageCode = paperback_extensions_common_1.LanguageCode.RUSSIAN;
+        this.genreTag = 'Жанры';
+        this.authorTag = 'Автор';
+        this.statusTag = 'статус';
     }
     parseStatus(str) {
         let status = paperback_extensions_common_1.MangaStatus.UNKNOWN;
         switch (str.toLowerCase()) {
-            case 'in corso':
+            //just incase if there is a manga that is ongoing it will give
+            case 'Продолжается':
                 status = paperback_extensions_common_1.MangaStatus.ONGOING;
                 break;
-            case 'completato':
+            // most series on ninemangaru will say it's completed but they are not
+            case 'постоянный':
                 status = paperback_extensions_common_1.MangaStatus.COMPLETED;
                 break;
         }
@@ -880,10 +882,10 @@ class NineMangaRU extends NineManga_1.NineManga {
         let time;
         let trimmed = Number(((_a = /\d*/.exec(timeAgo)) !== null && _a !== void 0 ? _a : [])[0]);
         trimmed = trimmed == 0 && timeAgo.includes('a') ? 1 : trimmed;
-        if (timeAgo.includes('mins') || timeAgo.includes('minutes') || timeAgo.includes('minute')) {
+        if (timeAgo.includes('минут') || timeAgo.includes('минута')) {
             time = new Date(Date.now() - trimmed * 60000);
         }
-        else if (timeAgo.includes('ore') || timeAgo.includes('hour')) {
+        else if (timeAgo.includes('часа')) {
             time = new Date(Date.now() - trimmed * 3600000);
         }
         else {

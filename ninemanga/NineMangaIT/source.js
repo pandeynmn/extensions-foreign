@@ -720,7 +720,7 @@ class Parser {
                 name,
                 chapNum,
                 time,
-                langCode: paperback_extensions_common_1.LanguageCode.JAPANESE,
+                langCode: source.languageCode,
             }));
         }
         return chapters;
