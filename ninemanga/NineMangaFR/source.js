@@ -553,7 +553,7 @@ class NineManga extends paperback_extensions_common_1.Source {
         if (this.userAgentRandomizer !== '') {
             headers['user-agent'] = this.userAgentRandomizer;
         }
-        headers['referer'] = `${this.baseUrl}${refererPath !== null && refererPath !== void 0 ? refererPath : ''}`;
+        headers['accept-language'] = 'es-ES,es;q=0.9,en;q=0.8,gl;q=0.7';
         return headers;
     }
     parseStatus(str) {
