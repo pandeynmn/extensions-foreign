@@ -32,26 +32,28 @@ export const NineMangaRUInfo: SourceInfo = {
 
 export class NineMangaRU extends NineManga {
     baseUrl: string = RU_DOMAIN
-    languageCode: LanguageCode = LanguageCode.ITALIAN
+    languageCode: LanguageCode = LanguageCode.RUSSIAN
 
-    genreTag = 'Genere(s)'
-    authorTag = 'Author(s)'
-    statusTag = 'Stato'
+    genreTag = 'Жанры'
+    authorTag = 'Автор'
+    statusTag = 'статус'
+    }
 
     override parseStatus(str: string): MangaStatus {
         let status = MangaStatus.UNKNOWN
 
         switch (str.toLowerCase()) {
-            case 'in corso':
+           //just incase if there is a manga that is ongoing it will give
+            case 'Продолжается':
                 status = MangaStatus.ONGOING
                 break
-            case 'completato':
+           // most series on ninemangaru will say it's completed buy they are not
+            case 'постоянный':
                 status = MangaStatus.COMPLETED
                 break
         }
         return status
     }
-
     protected override convertTime(timeAgo: string): Date {
         let time: Date
         let trimmed = Number((/\d*/.exec(timeAgo) ?? [])[0])
