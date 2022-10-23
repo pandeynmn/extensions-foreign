@@ -17,9 +17,9 @@ import {
 import { Parser } from './parser'
 import { URLBuilder } from './helper'
 
-const MW_DOMAIN = 'https://www.mangaworld.in'
+const MW_DOMAIN = 'https://www.mangaworld.so'
 export const MangaWorldInfo: SourceInfo = {
-    version: '2.0.1',
+    version: '2.0.2',
     name: 'MangaWorld',
     description: 'Extension that pulls manga from MangaWorld.',
     author: 'NmN',
@@ -41,6 +41,8 @@ export const MangaWorldInfo: SourceInfo = {
 }
 
 export class MangaWorld extends Source {
+    baseUrl = MW_DOMAIN
+    RETRIES = 5
     requestManager = createRequestManager({
         requestsPerSecond: 3,
     })
@@ -48,50 +50,50 @@ export class MangaWorld extends Source {
     parser = new Parser()
 
     override getMangaShareUrl(mangaId: string): string {
-        return `${MW_DOMAIN}/manga/${mangaId}`
+        return `${this.baseUrl}/manga/${mangaId}`
     }
 
     async getMangaDetails(mangaId: string): Promise<Manga> {
         const request = createRequestObject({
-            url: `${MW_DOMAIN}/manga/${mangaId}`,
+            url: `${this.baseUrl}/manga/${mangaId}`,
             method: 'GET',
         })
 
-        const response = await this.requestManager.schedule(request, 3)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseMangaDetails($, mangaId)
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
         const request = createRequestObject({
-            url: `${MW_DOMAIN}/manga/${mangaId}`,
+            url: `${this.baseUrl}/manga/${mangaId}`,
             method: 'GET',
         })
 
-        const response = await this.requestManager.schedule(request, 3)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
-        return this.parser.parseChapters($, mangaId)
+        return this.parser.parseChapters($, mangaId, this)
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
         const request = createRequestObject({
-            url: `${MW_DOMAIN}/manga/${mangaId}/read/${chapterId}/?style=list`,
+            url: `${this.baseUrl}/manga/${mangaId}/read/${chapterId}/?style=list`,
             method: 'GET',
         })
-        const response = await this.requestManager.schedule(request, 3)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseChapterDetails($, mangaId, chapterId)
     }
 
     override async getTags(): Promise<TagSection[]> {
         const request = createRequestObject({
-            url: MW_DOMAIN,
+            url: this.baseUrl,
             method: 'GET',
         })
 
-        const response = await this.requestManager.schedule(request, 3)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
-        return this.parser.parseTags($)
+        return this.parser.parseTags($, this.baseUrl)
     }
 
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
@@ -99,7 +101,7 @@ export class MangaWorld extends Source {
         if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
 
         const request = this.constructSearchRequest(page, query)
-        const data = await this.requestManager.schedule(request, 2)
+        const data = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(data.data)
         const manga = this.parser.parseSearchResults($)
 
@@ -114,10 +116,10 @@ export class MangaWorld extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: `${MW_DOMAIN}`,
+            url: `${this.baseUrl}`,
             method: 'GET',
         })
-        const response = await this.requestManager.schedule(request, 2)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
 
         this.parser.parseHomeSections($, sectionCallback)
@@ -127,11 +129,11 @@ export class MangaWorld extends Source {
         const page = metadata?.page ?? 1
 
         const request = createRequestObject({
-            url: `${MW_DOMAIN}/?page=${page}`,
+            url: `${this.baseUrl}/?page=${page}`,
             method: 'GET',
         })
 
-        const response = await this.requestManager.schedule(request, 1)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         const manga: MangaTile[] = this.parser.parseViewMore($)
 
@@ -166,7 +168,7 @@ export class MangaWorld extends Source {
 
     constructSearchRequest(page: number, query: SearchRequest): any {
         const request = createRequestObject({
-            url: new URLBuilder(MW_DOMAIN)
+            url: new URLBuilder(this.baseUrl)
                 .addPathComponent('archive')
                 .addQueryParameter('keyword', encodeURIComponent(query?.title ?? ''))
                 .addQueryParameter(

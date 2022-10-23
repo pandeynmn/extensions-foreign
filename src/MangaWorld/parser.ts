@@ -11,7 +11,6 @@ import {
     TagSection,
 } from 'paperback-extensions-common'
 
-const MW_DOMAIN = 'https://www.mangaworld.in'
 
 export class Parser {
     parseMangaDetails($: CheerioStatic, mangaId: string): Manga {
@@ -71,12 +70,12 @@ export class Parser {
         })
     }
 
-    parseChapters($: CheerioStatic, mangaId: string): Chapter[] {
+    parseChapters($: CheerioStatic, mangaId: string, source: any): Chapter[] {
         const chapters: Chapter[] = []
         const arrChapters = $('.chapter').toArray().reverse()
 
         for (const item of arrChapters) {
-            const id = $('a', item).attr('href')?.replace(`${MW_DOMAIN}/manga/${mangaId}/read/`, '') ?? ''
+            const id = $('a', item).attr('href')?.replace(`${source.baseUrl}/manga/${mangaId}/read/`, '') ?? ''
             const name = $('a', item).attr('title') ?? ''
             const chapNum = Number($('.d-inline-block', item).text().split(' ')[1]) ?? -1
             // const time = source.convertTime($('.col3 > a', $(item)).text().split(' ')[0]) ?? ''
@@ -97,7 +96,7 @@ export class Parser {
 
     parseChapterDetails($: CheerioStatic, mangaId: string, id: string): ChapterDetails {
         const pages: string[] = []
-        
+
         for (const item of $('.col-12.text-center.position-relative img').toArray()) {
             const imageUrl = $(item).attr('src')
             if (!imageUrl) continue
@@ -112,13 +111,13 @@ export class Parser {
         })
     }
 
-    parseTags($: CheerioSelector): TagSection[] {
+    parseTags($: CheerioSelector, baseUrl: any): TagSection[] {
         const genres: Tag[] = []
 
         let first_label = ''
         let i = 0
         for (const item of $('.dropdown-menu.dropdown-multicol .dropdown-item').toArray()) {
-            const id = $(item).attr('href')?.replace(`${MW_DOMAIN}/archive?genre=`, '') ?? ''
+            const id = $(item).attr('href')?.replace(`${baseUrl}/archive?genre=`, '') ?? ''
             const label = $(item).text().trim()
             if (i == 0) first_label = label
             if (label == first_label && i > 0) break
@@ -132,7 +131,7 @@ export class Parser {
     parseSearchResults($: CheerioSelector): MangaTile[] {
         const results: MangaTile[] = []
         for (const item of $('.comics-grid .entry').toArray()) {
-            const id = $('a', item).attr('href')?.replace(`${MW_DOMAIN}/manga/`, '') ?? ''
+            const id    = (($('a', item).attr('href') ?? '').match(/[0-9]+\/[a-zA-Z0-9\-]+/i) ?? ['null'])[0] ?? ''
             const title = $('a', item).attr('title') ?? ''
             const image = $('a img', item).attr('src') ?? ''
 
@@ -162,7 +161,7 @@ export class Parser {
         const arrTrending = $('.entry.vertical').toArray()
 
         for (const obj of arrLatest) {
-            const id    = $('a', obj).attr('href')?.replace(`${MW_DOMAIN}/manga/`, '') .slice(0, -1)?? ''
+            const id    = (($('a', obj).attr('href') ?? '').match(/[0-9]+\/[a-zA-Z0-9\-]+/i) ?? ['null'])[0] ?? ''
             const title = $('a', obj).attr('title') ?? ''
             const image = $('a img', obj).attr('src') ?? ''
             const sub   = $('.d-flex.flex-wrap.flex-row a', obj).first().attr('title') ?? ''
@@ -180,7 +179,7 @@ export class Parser {
 
         let i = 0
         for (const obj of arrHotTitle) {
-            const id    = $('a', obj).attr('href')?.replace('https://www.mangaworld.in/manga/', '') ?? ''
+            const id    = (($('a', obj).attr('href') ?? '').match(/[0-9]+\/[a-zA-Z0-9\-]+/i) ?? ['null'])[0] ?? ''
             const image = $('.img-fluid', obj).attr('src') ?? ''
             const title = $('.name', obj).text().trim()
             if (i == 10) break
@@ -196,10 +195,10 @@ export class Parser {
         section2.items = hotTitles
         sectionCallback(section2)
 
-        for (const item of arrTrending) {
-            const id    = $('a', item).attr('href')?.replace('https://www.mangaworld.in/manga/', '').slice(0, -1) ?? ''
-            const image = $('a img', item).attr('src') ?? ''
-            const title = $('.manga-title', item).text().trim()
+        for (const obj of arrTrending) {
+            const id    = (($('a', obj).attr('href') ?? '').match(/[0-9]+\/[a-zA-Z0-9\-]+/i) ?? ['null'])[0] ?? ''
+            const image = $('a img', obj).attr('src') ?? ''
+            const title = $('.manga-title', obj).text().trim()
             trending.push(
                 createMangaTile({
                     id,
@@ -216,7 +215,7 @@ export class Parser {
         const more: MangaTile[] = []
         const arrLatest   = $('.col-sm-12.col-md-8.col-xl-9 .comics-grid .entry').toArray()
         for (const obj of arrLatest) {
-            const id    = $('a', obj).attr('href')?.replace(`${MW_DOMAIN}/manga/`, '').slice(0, -1) ?? ''
+            const id    = (($('a', obj).attr('href') ?? '').match(/[0-9]+\/[a-zA-Z0-9\-]+/i) ?? ['null'])[0] ?? ''
             const title = $('a', obj).attr('title') ?? ''
             const image = $('a img', obj).attr('src') ?? ''
             const sub   = $('.d-flex.flex-wrap.flex-row a', obj).first().attr('title') ?? ''
