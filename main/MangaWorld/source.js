@@ -369,7 +369,7 @@ exports.MangaWorld = exports.MangaWorldInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const parser_1 = require("./parser");
 const helper_1 = require("./helper");
-const MW_DOMAIN = 'https://www.mangaworld.so';
+const MW_DOMAIN = 'https://www.mangaworld.bz';
 exports.MangaWorldInfo = {
     version: '2.0.2',
     name: 'MangaWorld',
