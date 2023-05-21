@@ -371,7 +371,7 @@ const parser_1 = require("./parser");
 const helper_1 = require("./helper");
 const MW_DOMAIN = 'https://www.mangaworld.bz';
 exports.MangaWorldInfo = {
-    version: '2.0.2',
+    version: '2.0.3',
     name: 'MangaWorld',
     description: 'Extension that pulls manga from MangaWorld.',
     author: 'NmN',
