@@ -3,102 +3,104 @@ import {
     ChapterDetails,
     ContentRating,
     HomeSection,
-    LanguageCode,
-    Manga,
-    MangaTile,
     PagedResults,
-    RequestManager,
     SearchRequest,
-    Source,
+    Request,
+    Response,
     SourceInfo,
+    SourceIntents,
+    SourceManga,
+    SourceStateManager,
+    BadgeColor,
+    SearchResultsProviding,
+    MangaProviding,
+    ChapterProviding,
+    HomePageSectionsProviding,
     TagSection,
-    TagType,
-} from 'paperback-extensions-common'
+    PartialSourceManga,
+} from '@paperback/types'
 
 import { Parser } from './parser'
 
 const MT_DOMAIN = 'https://manga-tube.me/'
+
 export const MangaTubeInfo: SourceInfo = {
-    version: '2.0.0',
+    version: '3.0.0',
     name: 'MangaTube',
     description: 'Extension that pulls manga from MangaTube.',
     author: 'NmN',
     authorWebsite: 'http://github.com/pandeynmm',
     icon: 'icon.png',
     contentRating: ContentRating.EVERYONE,
-    language: LanguageCode.GERMAN,
+    language: 'de',
     websiteBaseURL: MT_DOMAIN,
     sourceTags: [
         {
-            text: 'New',
-            type: TagType.GREEN,
-        },
-        {
             text: 'GERMAN',
-            type: TagType.GREY,
+            type: BadgeColor.GREY,
         },
     ],
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS,
 }
-
-export class MangaTube extends Source {
-    requestManager = createRequestManager({
-        requestsPerSecond: 3,
+export class MangaTube implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding { 
+    
+    constructor(private cheerio: CheerioAPI) {}
+    parser = new Parser()
+    RETRIES = 5
+    RPS = 8
+    requestManager = App.createRequestManager({
+        requestsPerSecond: this.RPS,
     })
 
-    parser = new Parser()
 
-    override getMangaShareUrl(mangaId: string): string {
+    getMangaShareUrl(mangaId: string): string {
         return `${MT_DOMAIN}/series/${mangaId}`
     }
 
-    async getMangaDetails(mangaId: string): Promise<Manga> {
-        const request = createRequestObject({
+    async getMangaDetails(mangaId: string): Promise<SourceManga> {
+        const request = App.createRequest({
             url: `${MT_DOMAIN}/series/${mangaId}`,
             method: 'GET',
         })
-
-        const response = await this.requestManager.schedule(request, 3)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseMangaDetails($, mangaId)
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        const request = createRequestObject({
+        const request = App.createRequest({
             url: `${MT_DOMAIN}/series/${mangaId}`,
             method: 'GET',
         })
-
-        const response = await this.requestManager.schedule(request, 3)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseChapters($, mangaId)
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const request = createRequestObject({
+        const request = App.createRequest({
             url: `${MT_DOMAIN}/series/${chapterId}`,
             method: 'GET',
         })
-        const response = await this.requestManager.schedule(request, 3)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseChapterDetails(response.data, mangaId, chapterId)
     }
 
-    override async getTags(): Promise<TagSection[]> {
-        const request = createRequestObject({
+    async getTags(): Promise<TagSection[]> {
+        const request = App.createRequest({
             url: MT_DOMAIN,
             method: 'GET',
         })
-
-        const response = await this.requestManager.schedule(request, 3)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseTags($)
     }
 
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         let page = metadata?.page ?? 1
-        if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
-
-        const request = createRequestObject({
+        if (page == -1) return App.createPagedResults({ results: [], metadata: { page: -1 } })
+        const request = App.createRequest({
             url: `${MT_DOMAIN}/ajax`,
             method: 'POST',
             headers: this.constructHeaders({
@@ -111,36 +113,31 @@ export class MangaTube extends Source {
         })
         const response = await this.requestManager.schedule(request, 2)
         const $ = this.cheerio.load(response.data)
-
         const manga = this.parser.parseSearchResults(response.data)
-
         page++
         if (manga.length < 16) page = -1
-
-        return createPagedResults({
+        return App.createPagedResults({
             results: manga,
             metadata: { page: page },
         })
     }
 
-    override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const request = createRequestObject({
+    async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
+        const request = App.createRequest({
             url: `${MT_DOMAIN}`,
             method: 'GET',
         })
         const response = await this.requestManager.schedule(request, 2)
         const $ = this.cheerio.load(response.data)
-
         this.parser.parseHomeSections($, sectionCallback)
     }
 
-    override async getViewMoreItems(id: string, metadata: any): Promise<PagedResults> {
+    async getViewMoreItems(id: string, metadata: any): Promise<PagedResults> {
         const page = metadata?.page ?? 1
-        const request  = this.createRequestObject(id, page)
+        const request = this.createRequestObject(id, page)
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
-
-        let manga: MangaTile[] = []
+        let manga: PartialSourceManga[] = []
         switch (id) {
             case '1':
                 manga = this.parser.parseViewMoreLatest($)
@@ -150,7 +147,7 @@ export class MangaTube extends Source {
                 manga = this.parser.parseViewMorePopular(response.data)
                 break
         }
-        return createPagedResults({
+        return App.createPagedResults({
             results: manga,
             metadata: { page: page + 1 },
         })
@@ -175,18 +172,16 @@ export class MangaTube extends Source {
         } else {
             time = new Date(timeAgo)
         }
-
         return time
     }
 
     createRequestObject(id: string, page: string): any {
-        let request = createRequestObject({
+        let request = App.createRequest({
             url: `${MT_DOMAIN}/?page=${page}`,
             method: 'GET',
         })
         if (id == '1') return request
-
-        request = createRequestObject({
+        request = App.createRequest({
             url: `${MT_DOMAIN}/ajax`,
             method: 'POST',
             headers: this.constructHeaders({
@@ -203,6 +198,7 @@ export class MangaTube extends Source {
     }
 
     userAgentRandomizer = `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/78.0${Math.floor(Math.random() * 100000)}`
+
     constructHeaders(headers?: any, refererPath?: string): any {
         headers = headers ?? {}
         if (this.userAgentRandomizer !== '') {

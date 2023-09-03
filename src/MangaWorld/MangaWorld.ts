@@ -3,80 +3,80 @@ import {
     ChapterDetails,
     ContentRating,
     HomeSection,
-    LanguageCode,
-    Manga,
-    MangaTile,
     PagedResults,
     SearchRequest,
-    Source,
     SourceInfo,
+    SourceIntents,
+    SourceManga,
+    BadgeColor,
+    SearchResultsProviding,
+    MangaProviding,
+    ChapterProviding,
+    HomePageSectionsProviding,
     TagSection,
-    TagType,
-} from 'paperback-extensions-common'
+    PartialSourceManga,
+} from '@paperback/types'
 
 import { Parser } from './parser'
 import { URLBuilder } from './helper'
 
 const MW_DOMAIN = 'https://www.mangaworld.bz'
+
 export const MangaWorldInfo: SourceInfo = {
-    version: '2.0.3',
+    version: '3.0.0',
     name: 'MangaWorld',
-    description: 'Extension that pulls manga from MangaWorld.',
+    description: 'Extension that pulls manga from MangaWorld (0.8).',
     author: 'NmN',
     authorWebsite: 'http://github.com/pandeynmm',
     icon: 'icon.png',
     contentRating: ContentRating.EVERYONE,
-    language: LanguageCode.ITALIAN,
+    language: 'it',
     websiteBaseURL: MW_DOMAIN,
     sourceTags: [
         {
-            text: 'New',
-            type: TagType.GREEN,
-        },
-        {
             text: 'ITALIAN',
-            type: TagType.GREY,
+            type: BadgeColor.GREY,
         },
     ],
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS,
 }
 
-export class MangaWorld extends Source {
+export class MangaWorld implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding { 
     baseUrl = MW_DOMAIN
-    RETRIES = 5
-    requestManager = createRequestManager({
-        requestsPerSecond: 3,
-    })
-
+    constructor(private cheerio: CheerioAPI) {}
+    RETRIES = 10
     parser = new Parser()
 
-    override getMangaShareUrl(mangaId: string): string {
+    requestManager = App.createRequestManager({
+        requestsPerSecond: 8,
+    })
+    
+    getMangaShareUrl(mangaId: string): string {
         return `${this.baseUrl}/manga/${mangaId}`
     }
 
-    async getMangaDetails(mangaId: string): Promise<Manga> {
-        const request = createRequestObject({
+    async getMangaDetails(mangaId: string): Promise<SourceManga> {
+        const request = App.createRequest({
             url: `${this.baseUrl}/manga/${mangaId}`,
             method: 'GET',
         })
-
         const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseMangaDetails($, mangaId)
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        const request = createRequestObject({
+        const request = App.createRequest({
             url: `${this.baseUrl}/manga/${mangaId}`,
             method: 'GET',
         })
-
         const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseChapters($, mangaId, this)
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const request = createRequestObject({
+        const request = App.createRequest({
             url: `${this.baseUrl}/manga/${mangaId}/read/${chapterId}/?style=list`,
             method: 'GET',
         })
@@ -85,12 +85,11 @@ export class MangaWorld extends Source {
         return this.parser.parseChapterDetails($, mangaId, chapterId)
     }
 
-    override async getTags(): Promise<TagSection[]> {
-        const request = createRequestObject({
+    async getTags(): Promise<TagSection[]> {
+        const request = App.createRequest({
             url: this.baseUrl,
             method: 'GET',
         })
-
         const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
         return this.parser.parseTags($, this.baseUrl)
@@ -98,46 +97,39 @@ export class MangaWorld extends Source {
 
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         let page = metadata?.page ?? 1
-        if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
-
+        if (page == -1) return App.createPagedResults({ results: [], metadata: { page: -1 } })
         const request = this.constructSearchRequest(page, query)
         const data = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(data.data)
         const manga = this.parser.parseSearchResults($)
-
         page++
         if (manga.length < 16) page = -1
-
-        return createPagedResults({
+        return App.createPagedResults({
             results: manga,
             metadata: { page: page },
         })
     }
 
-    override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const request = createRequestObject({
+    async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
+        const request = App.createRequest({
             url: `${this.baseUrl}`,
             method: 'GET',
         })
         const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
-
         this.parser.parseHomeSections($, sectionCallback)
     }
 
-    override async getViewMoreItems(_: string, metadata: any): Promise<PagedResults> {
+    async getViewMoreItems(_: string, metadata: any): Promise<PagedResults> {
         const page = metadata?.page ?? 1
-
-        const request = createRequestObject({
+        const request = App.createRequest({
             url: `${this.baseUrl}/?page=${page}`,
             method: 'GET',
         })
-
         const response = await this.requestManager.schedule(request, this.RETRIES)
         const $ = this.cheerio.load(response.data)
-        const manga: MangaTile[] = this.parser.parseViewMore($)
-
-        return createPagedResults({
+        const manga: PartialSourceManga[] = this.parser.parseViewMore($)
+        return App.createPagedResults({
             results: manga,
             metadata: { page: page + 1 },
         })
@@ -162,12 +154,11 @@ export class MangaWorld extends Source {
         } else {
             time = new Date(timeAgo)
         }
-
         return time
     }
 
     constructSearchRequest(page: number, query: SearchRequest): any {
-        const request = createRequestObject({
+        const request = App.createRequest({
             url: new URLBuilder(this.baseUrl)
                 .addPathComponent('archive')
                 .addQueryParameter('keyword', encodeURIComponent(query?.title ?? ''))
