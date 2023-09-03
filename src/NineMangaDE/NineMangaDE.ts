@@ -1,19 +1,16 @@
 import {
     ContentRating,
-    LanguageCode,
-    MangaStatus,
     SourceInfo,
-    TagType
-} from 'paperback-extensions-common'
-import {
-    getExportVersion,
-    NineManga
+    BadgeColor,
+    SourceIntents,
+} from '@paperback/types'
+
+import { 
+    getExportVersion, 
+    NineManga 
 } from '../NineManga'
 
-
-
 const DE_DOMAIN = 'https://de.ninemanga.com'
-
 export const NineMangaDEInfo: SourceInfo = {
     version: getExportVersion('0.0.1'),
     name: 'NineMangaDE',
@@ -22,53 +19,48 @@ export const NineMangaDEInfo: SourceInfo = {
     authorWebsite: 'http://github.com/pandyenmn',
     icon: 'icon.png',
     contentRating: ContentRating.EVERYONE,
-    language: LanguageCode.DUTCH,
+    language: 'de',
     websiteBaseURL: DE_DOMAIN,
     sourceTags: [
         {
-            text: 'Notifications',
-            type: TagType.GREEN
-        },
-        {
             text: 'German',
-            type: TagType.GREY
+            type: BadgeColor.GREY
         }
-    ]
+    ],
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.CLOUDFLARE_BYPASS_REQUIRED,
 }
-
-
 export class NineMangaDE extends NineManga {
     baseUrl: string = DE_DOMAIN
-    languageCode: LanguageCode = LanguageCode.DUTCH
+    languageCode = 'de'
     genreTag = 'Genre (s)'
     authorTag = 'Autor (en)'
     statusTag = 'Status'
-
-    override parseStatus(str: string): MangaStatus {
-        let status = MangaStatus.UNKNOWN
+    override parseStatus(str: string): string {
+        let status = 'Unknown'
         switch (str.toLowerCase()) {
             case 'laufende':
-                status = MangaStatus.ONGOING
+                status = 'Ongoing'
                 break
             case 'abgeschlossen':
-                status = MangaStatus.COMPLETED
+                status = 'Completed'
                 break
         }
         return status
     }
-
+    
     protected override convertTime(timeAgo: string): Date {
         let time: Date
         let trimmed = Number((/\d*/.exec(timeAgo) ?? [])[0])
         trimmed = trimmed == 0 && timeAgo.includes('a') ? 1 : trimmed
         if (timeAgo.includes('mins') || timeAgo.includes('minutes') || timeAgo.includes('minute')) {
             time = new Date(Date.now() - trimmed * 60000)
-        } else if (timeAgo.includes('Stunden') || timeAgo.includes('hour')) {
+        }
+        else if (timeAgo.includes('Stunden') || timeAgo.includes('hour')) {
             time = new Date(Date.now() - trimmed * 3600000)
-        } else {
+        }
+        else {
             time = new Date(timeAgo)
         }
         return time
     }
-    
 }

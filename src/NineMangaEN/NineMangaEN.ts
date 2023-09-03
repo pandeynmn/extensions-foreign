@@ -1,18 +1,16 @@
 import {
     ContentRating,
-    LanguageCode,
     SourceInfo,
-    TagType
-} from 'paperback-extensions-common'
-import {
-    getExportVersion,
-    NineManga
+    BadgeColor,
+    SourceIntents,
+} from '@paperback/types'
+
+import { 
+    getExportVersion, 
+    NineManga 
 } from '../NineManga'
 
-
-
 const EN_DOMAIN = 'https://ninemanga.com'
-
 export const NineMangaENInfo: SourceInfo = {
     version: getExportVersion('0.0.0'),
     name: 'NineMangaEN',
@@ -22,23 +20,19 @@ export const NineMangaENInfo: SourceInfo = {
     icon: 'icon.png',
     contentRating: ContentRating.EVERYONE,
     websiteBaseURL: EN_DOMAIN,
-    language: LanguageCode.ENGLISH,
+    language: 'en',
     sourceTags: [
         {
-            text: 'Notifications',
-            type: TagType.GREEN
-        },
-        {
             text: 'English',
-            type: TagType.GREY
+            type: BadgeColor.GREY
         }
-    ]
+    ],
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.CLOUDFLARE_BYPASS_REQUIRED,
 }
-
 
 export class NineMangaEN extends NineManga {
     baseUrl: string = EN_DOMAIN
-    languageCode: LanguageCode = LanguageCode.ENGLISH
+    languageCode = 'en'
     genreTag = 'Genre(s)'
     authorTag = 'Author(s)'
     statusTag = 'Status'

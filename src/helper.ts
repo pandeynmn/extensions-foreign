@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 export class URLBuilder {
     parameters: Record<string, any | any[]> = {}
     pathComponents: string[] = []

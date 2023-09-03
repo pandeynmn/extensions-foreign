@@ -1,41 +1,33 @@
 {
-    "name": "nmn-ninemanga-extensions",
-    "repositoryName": "NineManga Extensions",
-    "version": "1.0.0",
-    "description": "Repo that sources from different ninemanga websites",
-    "main": "index.js",
-    "scripts": {
-      "bundle": "paperback bundle",
-      "serve": "paperback serve",
-      "test": "node_modules/.bin/mocha --timeout 300000 -r ts-node/register src/**/*.test.ts"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/Paperback-iOS/extensions-official.git"
-    },
-    "author": "NmN",
-    "license": "GPL-3.0-or-later",
-    "bugs": {
-      "url": "https://github.com/Paperback-iOS/extensions-official/issues"
-    },
-    "homepage": "https://github.com/Paperback-iOS/extensions-official#readme",
-    "devDependencies": {
-      "@types/chai": "^4.2.21",
-      "@types/chai-as-promised": "^7.1.4",
-      "@types/cheerio": "^0.22.21",
-      "@types/mocha": "^9.0.0",
-      "@typescript-eslint/eslint-plugin": "^4.25.0",
-      "@typescript-eslint/parser": "^4.25.0",
-      "chai": "^4.3.4",
-      "chai-as-promised": "^7.1.1",
-      "eslint": "^7.27.0",
-      "eslint-plugin-modules-newline": "^0.0.6",
-      "mocha": "^9.1.1",
-      "typescript": "^4.3.2"
-    },
-    "dependencies": {
-      "paperback-cli": "^1.4.0",
-      "paperback-extensions-common": "^4.3.5",
-      "ts-node": "^10.2.1"
-    }
+  "name": "nmn-ninemanga-extensions-0.8",
+  "repositoryName": "NineManga Extensions (0.8)",
+  "version": "2.0.0",
+  "description": "Repo that sources from different ninemanga websites 0.8",
+  "main": "index.js",
+  "scripts": {
+    "bundle": "npx paperback bundle",
+    "serve": "npx paperback serve",
+    "test": "node_modules/.bin/mocha --timeout 300000 -r ts-node/register src/**/*.test.ts"
+  },
+  "author": "NmN",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/cheerio": "^0.22.21",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.57.1",
+    "eslint": "^7.27.0",
+    "eslint-plugin-modules-newline": "^0.0.6",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@paperback/toolchain": "0.8.0-alpha.47",
+    "@paperback/types": "0.8.0-alpha.47",
+    "@types/crypto-js": "^4.1.1",
+    "cheerio": "^1.0.0-rc.12",
+    "crypto-js": "^4.1.1",
+    "entities": "^4.4.0",
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.2.1"
   }
+}
