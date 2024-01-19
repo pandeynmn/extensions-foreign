@@ -20,10 +20,10 @@ import {
 import { Parser } from './parser'
 import { URLBuilder } from './helper'
 
-const MW_DOMAIN = 'https://www.mangaworld.bz'
+const MW_DOMAIN = 'https://www.mangaworld.ac'
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '3.0.0',
+    version: '3.0.1',
     name: 'MangaWorld',
     description: 'Extension that pulls manga from MangaWorld (0.8).',
     author: 'NmN',
@@ -38,7 +38,7 @@ export const MangaWorldInfo: SourceInfo = {
             type: BadgeColor.GREY,
         },
     ],
-    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS,
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.CLOUDFLARE_BYPASS_REQUIRED,
 }
 
 export class MangaWorld implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding { 
@@ -135,6 +135,7 @@ export class MangaWorld implements SearchResultsProviding, MangaProviding, Chapt
         })
     }
 
+
     /**
      * Parses a time string from a Madara source into a Date object.
      * Copied from Madara.ts made by gamefuzzy
@@ -155,6 +156,18 @@ export class MangaWorld implements SearchResultsProviding, MangaProviding, Chapt
             time = new Date(timeAgo)
         }
         return time
+    }
+
+    async getCloudflareBypassRequestAsync() {
+        return App.createRequest({
+            url: this.baseUrl,
+            method: 'GET',
+            headers: {
+                'referer': `${this.baseUrl}/`,
+                'origin': `${this.baseUrl}/`,
+                'user-agent': await this.requestManager.getDefaultUserAgent()
+            }
+        })
     }
 
     constructSearchRequest(page: number, query: SearchRequest): any {
