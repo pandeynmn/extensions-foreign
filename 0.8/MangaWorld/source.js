@@ -464,9 +464,9 @@ exports.MangaWorld = exports.MangaWorldInfo = void 0;
 const types_1 = require("@paperback/types");
 const parser_1 = require("./parser");
 const helper_1 = require("./helper");
-const MW_DOMAIN = 'https://www.mangaworld.bz';
+const MW_DOMAIN = 'https://www.mangaworld.ac';
 exports.MangaWorldInfo = {
-    version: '3.0.0',
+    version: '3.0.1',
     name: 'MangaWorld',
     description: 'Extension that pulls manga from MangaWorld (0.8).',
     author: 'NmN',
@@ -481,7 +481,7 @@ exports.MangaWorldInfo = {
             type: types_1.BadgeColor.GREY,
         },
     ],
-    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS,
+    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS | types_1.SourceIntents.CLOUDFLARE_BYPASS_REQUIRED,
 };
 class MangaWorld {
     constructor(cheerio) {
@@ -595,6 +595,17 @@ class MangaWorld {
             time = new Date(timeAgo);
         }
         return time;
+    }
+    async getCloudflareBypassRequestAsync() {
+        return App.createRequest({
+            url: this.baseUrl,
+            method: 'GET',
+            headers: {
+                'referer': `${this.baseUrl}/`,
+                'origin': `${this.baseUrl}/`,
+                'user-agent': await this.requestManager.getDefaultUserAgent()
+            }
+        });
     }
     constructSearchRequest(page, query) {
         const request = App.createRequest({
